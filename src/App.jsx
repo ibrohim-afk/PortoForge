@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThreeDTextComponent } from './components/ThreeDTextComponent';
+import { ThreeDShapeComponent } from './components/ThreeDShapeComponent';
 
 // --- CUSTOM HOOK UNTUK SCRIPT (THREE.JS) ---
 const useScript = (url, id) => {
@@ -205,6 +206,11 @@ export default function App() {
   const [enable3DShapeFromImage, setEnable3DShapeFromImage] = useState(true);
   const [shapeImageBase64, setShapeImageBase64] = useState('');
   const [shapeImageColor, setShapeImageColor] = useState('#3b82f6');
+  const [shapeDepth, setShapeDepth] = useState('medium');
+  const [shapeRotationX, setShapeRotationX] = useState(0.005);
+  const [shapeRotationY, setShapeRotationY] = useState(0.008);
+  const [shapeRotationZ, setShapeRotationZ] = useState(0);
+  const [shapeBackgroundColor, setShapeBackgroundColor] = useState('#ffffff');
   const [isUploadingShapeImage, setIsUploadingShapeImage] = useState(false);
   const [editorTab, setEditorTab] = useState('content');
   const [activeTabRight, setActiveTabRight] = useState('preview');
@@ -217,8 +223,8 @@ export default function App() {
     certifications, publications, achievements, contactConfig, chatConfig,
     theme, primaryColor, font, layout, animation, experienceLayout,
     enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle,
-    enable3DShapeFromImage, shapeImageBase64, shapeImageColor
-  }), [name, title, description, profilePic, socials, projects, experience, skills, certifications, publications, achievements, contactConfig, chatConfig, theme, primaryColor, font, layout, animation, experienceLayout, enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle, enable3DShapeFromImage, shapeImageBase64, shapeImageColor]);
+    enable3DShapeFromImage, shapeImageBase64, shapeImageColor, shapeDepth, shapeRotationX, shapeRotationY, shapeRotationZ, shapeBackgroundColor
+  }), [name, title, description, profilePic, socials, projects, experience, skills, certifications, publications, achievements, contactConfig, chatConfig, theme, primaryColor, font, layout, animation, experienceLayout, enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle, enable3DShapeFromImage, shapeImageBase64, shapeImageColor, shapeDepth, shapeRotationX, shapeRotationY, shapeRotationZ, shapeBackgroundColor]);
 
   const handleSave = () => {
     try {
@@ -264,6 +270,11 @@ export default function App() {
         setEnable3DShapeFromImage(parsedData.enable3DShapeFromImage || false);
         setShapeImageBase64(parsedData.shapeImageBase64 || '');
         setShapeImageColor(parsedData.shapeImageColor || '#3b82f6');
+        setShapeDepth(parsedData.shapeDepth || 'medium');
+        setShapeRotationX(parsedData.shapeRotationX || 0.005);
+        setShapeRotationY(parsedData.shapeRotationY || 0.008);
+        setShapeRotationZ(parsedData.shapeRotationZ || 0);
+        setShapeBackgroundColor(parsedData.shapeBackgroundColor || '#ffffff');
         alert('Project Loaded! 🎉');
       } else { alert('No saved project found.'); }
     } catch (e) {
@@ -624,7 +635,61 @@ export default function App() {
                               className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
                             />
                           </label>
-                          <p className="text-xs text-gray-500">Gambar akan dikonversi menjadi bentuk 3D yang dapat diputar</p>
+                          <Select
+                            label="Depth / Volume"
+                            value={shapeDepth}
+                            onChange={(e) => setShapeDepth(e.target.value)}
+                          >
+                            <option value="shallow">Shallow</option>
+                            <option value="medium">Medium</option>
+                            <option value="deep">Deep</option>
+                          </Select>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Rotation X ({(shapeRotationX * 1000).toFixed(1)})</span>
+                            <input
+                              type="range"
+                              min="0"
+                              max="0.05"
+                              step="0.001"
+                              value={shapeRotationX}
+                              onChange={(e) => setShapeRotationX(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Rotation Y ({(shapeRotationY * 1000).toFixed(1)})</span>
+                            <input
+                              type="range"
+                              min="0"
+                              max="0.05"
+                              step="0.001"
+                              value={shapeRotationY}
+                              onChange={(e) => setShapeRotationY(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Rotation Z ({(shapeRotationZ * 1000).toFixed(1)})</span>
+                            <input
+                              type="range"
+                              min="0"
+                              max="0.05"
+                              step="0.001"
+                              value={shapeRotationZ}
+                              onChange={(e) => setShapeRotationZ(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Background Color</span>
+                            <input
+                              type="color"
+                              value={shapeBackgroundColor}
+                              onChange={(e) => setShapeBackgroundColor(e.target.value)}
+                              className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                            />
+                          </label>
+                          <p className="text-xs text-gray-500">Upload image dan customize rotasi 3D dengan volume yang Anda inginkan</p>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1248,6 +1313,55 @@ function PortfolioPreview({ animation, ...props }) {
             </div>
           </div>
         </motion.section>
+
+        {/* --- 3D TEXT SECTION (WOW FACTOR) --- */}
+        {props.enable3DText && (
+          <motion.section {...motionProps(1)} className="w-full">
+            <h2 className="text-2xl font-bold mb-4">3D Text Effect</h2>
+            <div style={{
+              width: '100%',
+              height: '300px',
+              backgroundColor: props.text3DBackgroundColor || '#f3f4f6',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: `2px solid var(--primary-color)`
+            }}>
+              <ThreeDTextComponent
+                text={props.text3D || props.name}
+                color={props.text3DColor || props.primaryColor}
+                size={props.text3DSize || 'large'}
+                speed={props.text3DSpeed || 'normal'}
+                bgColor={props.text3DBackgroundColor || '#f3f4f6'}
+                rotationStyle={props.text3DRotationStyle || 'xy-orbit'}
+              />
+            </div>
+          </motion.section>
+        )}
+
+        {/* --- 3D SHAPE FROM IMAGE SECTION (WOW FACTOR) --- */}
+        {props.enable3DShapeFromImage && props.shapeImageBase64 && (
+          <motion.section {...motionProps(1.5)} className="w-full">
+            <h2 className="text-2xl font-bold mb-4">3D Shape from Image</h2>
+            <div style={{
+              width: '100%',
+              height: '300px',
+              backgroundColor: props.shapeBackgroundColor || '#f3f4f6',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: `2px solid var(--primary-color)`
+            }}>
+              <ThreeDShapeComponent
+                imageBase64={props.shapeImageBase64}
+                color={props.shapeImageColor || props.primaryColor}
+                depth={props.shapeDepth || 'medium'}
+                rotationX={props.shapeRotationX || 0.005}
+                rotationY={props.shapeRotationY || 0.008}
+                rotationZ={props.shapeRotationZ || 0}
+                bgColor={props.shapeBackgroundColor || '#f3f4f6'}
+              />
+            </div>
+          </motion.section>
+        )}
 
         {/* --- Experience Section --- */}
         {props.experience.length > 0 && (
