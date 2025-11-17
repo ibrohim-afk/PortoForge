@@ -17,6 +17,7 @@ import {
   Loader2 // <-- Ikon Baru
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThreeDTextComponent } from './components/ThreeDTextComponent';
 
 // --- CUSTOM HOOK UNTUK SCRIPT (THREE.JS) ---
 const useScript = (url, id) => {
@@ -39,8 +40,6 @@ const useScript = (url, id) => {
 
 // --- DATA KONSTAN & TEMPLATES ---
 
-const DEFAULT_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hAgMCCwAp8wF+xYxG9wAAAABJRU5ErkJggg==';
-
 const THEMES = [
   { id: 'minimalist', name: 'Minimalist', bg: 'bg-white', bgValue: '#ffffff', text: 'text-gray-800', card: 'bg-gray-50 border border-gray-200' },
   {
@@ -58,18 +57,7 @@ const FONTS = ['Inter', 'Roboto', 'Lato', 'Montserrat', 'Oswald', 'Source Code P
 const LAYOUTS = ['one-page', 'split-grid', 'card-style'];
 const ANIMATIONS = ['none', 'fade-in', 'slide-up'];
 
-const SHAPES_3D_LOGO = [
-  { id: 'sphere', name: 'Sphere (Bola)' },
-  { id: 'plane', name: 'Plane (Kartu Datar)' },
-  { id: 'box', name: 'Box (Kubus)' },
-  { id: 'torus', name: 'Torus (Donat)' },
-  { id: 'cone', name: 'Cone (Kerucut)' },
-  { id: 'cylinder', name: 'Cylinder (Silinder)' },
-  { id: 'octahedron', name: 'Octahedron (Kristal 8-sisi)' },
-  { id: 'dodecahedron', name: 'Dodecahedron (12-sisi)' },
-  { id: 'icosahedron', name: 'Icosahedron (20-sisi)' },
-  { id: 'ring', name: 'Ring (Cincin)' },
-];
+const SHAPES_3D_LOGO = [];
 
 
 // --- TEMPLATES ---
@@ -97,9 +85,6 @@ const TEMPLATES = [
         placeholder: 'Tanyakan tentang proyek...'
       },
       theme: THEMES[0], primaryColor: '#3b82f6', font: 'Inter', layout: 'one-page', animation: 'slide-up',
-      enable3DBackground: true,
-      logo3DBase64: DEFAULT_LOGO_BASE64,
-      shape3D: 'plane',
       experienceLayout: 'list'
     }
   },
@@ -121,9 +106,6 @@ const TEMPLATES = [
         placeholder: 'Tanyakan tentang skill...'
       },
       theme: THEMES[0], primaryColor: '#10B981', font: 'Lato', layout: 'one-page', animation: 'fade-in',
-      enable3DBackground: false,
-      logo3DBase64: DEFAULT_LOGO_BASE64,
-      shape3D: 'sphere',
       experienceLayout: 'list'
     }
   },
@@ -169,9 +151,6 @@ const TEMPLATES = [
         placeholder: 'Contoh: "Jelaskan proyek fraktal-nya"'
       },
       theme: THEMES[1], primaryColor: '#c026d3', font: 'Poppins', layout: 'one-page', animation: 'slide-up',
-      enable3DBackground: true,
-      logo3DBase64: DEFAULT_LOGO_BASE64,
-      shape3D: 'icosahedron',
       experienceLayout: 'timeline'
     }
   }
@@ -199,7 +178,7 @@ export default function App() {
   // Data State
   const [name, setName] = useState('Your Name');
   const [title, setTitle] = useState('Your Job Title');
-  const [description, setDescription] = useState('A brief description about yourself.');
+  const [description, setDescription] = useState('');
   const [profilePic, setProfilePic] = useState('https://placehold.co/150x150/E2E8F0/334155?text=:)');
   const [socials, setSocials] = useState({ github: '', linkedin: '', twitter: '' });
   const [projects, setProjects] = useState([]);
@@ -208,121 +187,38 @@ export default function App() {
   const [certifications, setCertifications] = useState([]);
   const [publications, setPublications] = useState([]);
   const [achievements, setAchievements] = useState([]);
-
-  const [contactConfig, setContactConfig] = useState({
-    method: 'endpoint',
-    value: '',
-    introText: 'Get In Touch'
-  });
-
-  // --- STATE CHATBOT BARU ---
-  const [chatConfig, setChatConfig] = useState({
-    enable: false,
-    aiName: 'PortoBot',
-    introMessage: 'Halo! Saya asisten AI. Tanyakan apa saja tentang portofolio ini.',
-    placeholder: 'Tanyakan tentang proyek...'
-  });
-
-  // Design State
+  const [contactConfig, setContactConfig] = useState({ method: 'none', value: '', introText: 'Get In Touch' });
+  const [chatConfig, setChatConfig] = useState({ enable: true, aiName: 'PortoBot', introMessage: 'Halo!', placeholder: 'Tanya saya...' });
   const [theme, setTheme] = useState(THEMES[0]);
   const [primaryColor, setPrimaryColor] = useState('#3b82f6');
   const [font, setFont] = useState('Inter');
   const [layout, setLayout] = useState('one-page');
   const [animation, setAnimation] = useState('fade-in');
   const [experienceLayout, setExperienceLayout] = useState('list');
-
-  // --- STATE 3D BARU ---
-  const [enable3DBackground, setEnable3DBackground] = useState(false);
-  const [logo3DBase64, setLogo3DBase64] = useState(DEFAULT_LOGO_BASE64);
-  const [shape3D, setShape3D] = useState('sphere');
-  const [isUploading, setIsUploading] = useState(false);
-
-
-  // UI State
-  const [editorTab, setEditorTab] = useState('content'); // 'content', 'design', 'templates', 'connect', 'chat'
+  const [enable3DText, setEnable3DText] = useState(true);
+  const [text3D, setText3D] = useState('PortoForge');
+  const [text3DColor, setText3DColor] = useState('#3b82f6');
+  const [text3DSize, setText3DSize] = useState('large');
+  const [text3DSpeed, setText3DSpeed] = useState('normal');
+  const [text3DBackgroundColor, setText3DBackgroundColor] = useState('#ffffff');
+  const [text3DRotationStyle, setText3DRotationStyle] = useState('xy-orbit');
+  const [enable3DShapeFromImage, setEnable3DShapeFromImage] = useState(true);
+  const [shapeImageBase64, setShapeImageBase64] = useState('');
+  const [shapeImageColor, setShapeImageColor] = useState('#3b82f6');
+  const [isUploadingShapeImage, setIsUploadingShapeImage] = useState(false);
+  const [editorTab, setEditorTab] = useState('content');
   const [activeTabRight, setActiveTabRight] = useState('preview');
   const [viewport, setViewport] = useState('desktop');
-
-  // Kumpulkan semua state
-  const portfolioState = {
-    name, title, description, profilePic, socials, projects, experience,
-    skills, certifications, publications, achievements,
-    contactConfig,
-    chatConfig, // <-- Tambahkan chatConfig
-    theme, primaryColor, font, layout, animation,
-    enable3DBackground, logo3DBase64, shape3D,
-    experienceLayout
-  };
-
-  // --- State Preview Chat ---
   const [showChat, setShowChat] = useState(false);
 
-
-  useEffect(() => { loadGoogleFont(font); }, [font]);
-
-  // --- HANDLER: STATE MANIPULATION ---
-  const handleSocialChange = (key, value) => setSocials(prev => ({ ...prev, [key]: value }));
-  const handleItemChange = (setState, id, key, value) => {
-    setState(prev => prev.map(item => item.id === id ? { ...item, [key]: value } : item));
-  };
-  const addItem = (setState, newItem) => setState(prev => [...prev, { id: Date.now(), ...newItem }]);
-  const removeItem = (setState, id) => setState(prev => prev.filter(item => item.id !== id));
-
-  const handleContactChange = (key, value) => {
-    setContactConfig(prev => ({ ...prev, [key]: value }));
-  };
-
-  // --- HANDLER CHATBOT BARU ---
-  const handleChatConfigChange = (key, value) => {
-    setChatConfig(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadstart = () => setIsUploading(true);
-      reader.onloadend = () => {
-        setLogo3DBase64(reader.result);
-        setIsUploading(false);
-      };
-      reader.onerror = () => {
-        console.error("Gagal membaca file");
-        alert("Gagal membaca file. Pastikan file tidak rusak.");
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = null;
-  };
-
-
-  // --- HANDLER: SAVE, LOAD, TEMPLATE ---
-  const applyTemplate = (templateData) => {
-    setName(templateData.name);
-    setTitle(templateData.title);
-    setDescription(templateData.description);
-    setProfilePic(templateData.profilePic);
-    setSocials(templateData.socials);
-    setProjects(templateData.projects.map(p => ({ ...p })));
-    setExperience(templateData.experience.map(e => ({ ...e })));
-    setSkills(templateData.skills ? templateData.skills.map(s => ({ ...s })) : []);
-    setCertifications(templateData.certifications ? templateData.certifications.map(c => ({ ...c })) : []);
-    setPublications(templateData.publications ? templateData.publications.map(p => ({ ...p })) : []);
-    setAchievements(templateData.achievements ? templateData.achievements.map(a => ({ ...a })) : []);
-    setContactConfig(templateData.contactConfig || { method: 'none', value: '', introText: 'Get In Touch' });
-    setChatConfig(templateData.chatConfig || { enable: false, aiName: 'PortoBot', introMessage: 'Halo!', placeholder: 'Tanya saya...' });
-    setTheme(templateData.theme);
-    setPrimaryColor(templateData.primaryColor);
-    setFont(templateData.font);
-    setLayout(templateData.layout);
-    setAnimation(templateData.animation);
-    setEnable3DBackground(templateData.enable3DBackground || false);
-    setLogo3DBase64(templateData.logo3DBase64 || DEFAULT_LOGO_BASE64);
-    setShape3D(templateData.shape3D || 'sphere');
-    setExperienceLayout(templateData.experienceLayout || 'list');
-  };
+  // Helper to build portfolioState
+  const portfolioState = useMemo(() => ({
+    name, title, description, profilePic, socials, projects, experience, skills,
+    certifications, publications, achievements, contactConfig, chatConfig,
+    theme, primaryColor, font, layout, animation, experienceLayout,
+    enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle,
+    enable3DShapeFromImage, shapeImageBase64, shapeImageColor
+  }), [name, title, description, profilePic, socials, projects, experience, skills, certifications, publications, achievements, contactConfig, chatConfig, theme, primaryColor, font, layout, animation, experienceLayout, enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle, enable3DShapeFromImage, shapeImageBase64, shapeImageColor]);
 
   const handleSave = () => {
     try {
@@ -357,10 +253,17 @@ export default function App() {
         setFont(parsedData.font || 'Inter');
         setLayout(parsedData.layout || 'one-page');
         setAnimation(parsedData.animation || 'fade-in');
-        setEnable3DBackground(parsedData.enable3DBackground || false);
-        setLogo3DBase64(parsedData.logo3DBase64 || DEFAULT_LOGO_BASE64);
-        setShape3D(parsedData.shape3D || 'sphere');
         setExperienceLayout(parsedData.experienceLayout || 'list');
+        setEnable3DText(parsedData.enable3DText || false);
+        setText3D(parsedData.text3D || 'PortoForge');
+        setText3DColor(parsedData.text3DColor || '#3b82f6');
+        setText3DSize(parsedData.text3DSize || 'large');
+        setText3DSpeed(parsedData.text3DSpeed || 'normal');
+        setText3DBackgroundColor(parsedData.text3DBackgroundColor || '#ffffff');
+        setText3DRotationStyle(parsedData.text3DRotationStyle || 'xy-orbit');
+        setEnable3DShapeFromImage(parsedData.enable3DShapeFromImage || false);
+        setShapeImageBase64(parsedData.shapeImageBase64 || '');
+        setShapeImageColor(parsedData.shapeImageColor || '#3b82f6');
         alert('Project Loaded! 🎉');
       } else { alert('No saved project found.'); }
     } catch (e) {
@@ -369,6 +272,51 @@ export default function App() {
     }
   };
 
+  const handleSocialChange = (key, value) => setSocials(prev => ({ ...prev, [key]: value }));
+  const handleContactChange = (key, value) => setContactConfig(prev => ({ ...prev, [key]: value }));
+  const handleChatConfigChange = (key, value) => setChatConfig(prev => ({ ...prev, [key]: value }));
+  const addItem = (setter, item) => setter(prev => [...prev, { ...item, id: Date.now() }]);
+  const removeItem = (setter, id) => setter(prev => prev.filter(x => x.id !== id));
+  const handleItemChange = (setter, id, key, value) => setter(prev => prev.map(x => x.id === id ? { ...x, [key]: value } : x));
+  
+  const handleShapeImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingShapeImage(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setShapeImageBase64(reader.result || '');
+      setIsUploadingShapeImage(false);
+    };
+    reader.onerror = () => {
+      console.error('Error reading file');
+      setIsUploadingShapeImage(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const applyTemplate = (templateData) => {
+    setName(templateData.name || 'Your Name');
+    setTitle(templateData.title || '');
+    setDescription(templateData.description || '');
+    setProfilePic(templateData.profilePic || '');
+    setSocials(templateData.socials || { github: '', linkedin: '', twitter: '' });
+    setProjects(templateData.projects || []);
+    setExperience(templateData.experience || []);
+    setSkills(templateData.skills || []);
+    setCertifications(templateData.certifications || []);
+    setPublications(templateData.publications || []);
+    setAchievements(templateData.achievements || []);
+    setContactConfig(templateData.contactConfig || { method: 'none', value: '', introText: 'Get In Touch' });
+    setChatConfig(templateData.chatConfig || { enable: false, aiName: 'PortoBot', introMessage: 'Halo!', placeholder: 'Tanya saya...' });
+    setTheme(templateData.theme || THEMES[0]);
+    setPrimaryColor(templateData.primaryColor || '#3b82f6');
+    setFont(templateData.font || 'Inter');
+    setLayout(templateData.layout || 'one-page');
+    setAnimation(templateData.animation || 'fade-in');
+    setExperienceLayout(templateData.experienceLayout || 'list');
+    alert('Template applied! ✨');
+  };
 
   return (
     <div className="flex h-screen w-full bg-gray-100 font-sans relative">
@@ -561,19 +509,90 @@ export default function App() {
                 {/* --- BAGIAN "WOW FACTOR" YANG DIPERBARUI --- */}
                 <EditorSection title="Wow Factor">
                   <div className="flex flex-col gap-4">
+                    {/* --- 3D TEXT SECTION --- */}
                     <Toggle
-                      label="Enable 3D Rotating Background Logo"
-                      icon={Layers}
-                      checked={enable3DBackground}
-                      onChange={() => setEnable3DBackground(!enable3DBackground)}
+                      label="Enable 3D Text"
+                      icon={Type}
+                      checked={enable3DText}
+                      onChange={() => setEnable3DText(!enable3DText)}
                     />
                     <AnimatePresence>
-                      {enable3DBackground && (
+                      {enable3DText && (
                         <motion.div {...fadeAnim} className="flex flex-col gap-4 pl-6 pt-4 border-l-2 border-gray-200">
-                          {/* --- INPUT FILE BARU (DENGAN FEEDBACK LOADING) --- */}
+                          <Input
+                            label="3D Text Content"
+                            value={text3D}
+                            onChange={(e) => setText3D(e.target.value.slice(0, 50))}
+                            placeholder="Enter text (max 50 chars)"
+                          />
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Text Color</span>
+                            <input
+                              type="color"
+                              value={text3DColor}
+                              onChange={(e) => setText3DColor(e.target.value)}
+                              className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                            />
+                          </label>
+                          <Select
+                            label="Text Size"
+                            value={text3DSize}
+                            onChange={(e) => setText3DSize(e.target.value)}
+                          >
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                          </Select>
+                          <Select
+                            label="Rotation Speed"
+                            value={text3DSpeed}
+                            onChange={(e) => setText3DSpeed(e.target.value)}
+                          >
+                            <option value="slow">Slow</option>
+                            <option value="normal">Normal</option>
+                            <option value="fast">Fast</option>
+                            <option value="veryfast">Very Fast</option>
+                          </Select>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Background Color</span>
+                            <input
+                              type="color"
+                              value={text3DBackgroundColor}
+                              onChange={(e) => setText3DBackgroundColor(e.target.value)}
+                              className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                            />
+                          </label>
+                          <Select
+                            label="Rotation Style"
+                            value={text3DRotationStyle}
+                            onChange={(e) => setText3DRotationStyle(e.target.value)}
+                          >
+                            <option value="none">No Rotation</option>
+                            <option value="x-axis">X-Axis Rotation</option>
+                            <option value="y-axis">Y-Axis Rotation</option>
+                            <option value="xy-orbit">XY Orbit</option>
+                            <option value="xyz-spin">XYZ Spin</option>
+                          </Select>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* --- DIVIDER --- */}
+                    <div className="my-6 border-t border-gray-200"></div>
+
+                    {/* --- 3D SHAPE FROM IMAGE SECTION --- */}
+                    <Toggle
+                      label="Enable 3D Shape from Image"
+                      icon={Image}
+                      checked={enable3DShapeFromImage}
+                      onChange={() => setEnable3DShapeFromImage(!enable3DShapeFromImage)}
+                    />
+                    <AnimatePresence>
+                      {enable3DShapeFromImage && (
+                        <motion.div {...fadeAnim} className="flex flex-col gap-4 pl-6 pt-4 border-l-2 border-gray-200">
                           <label className="block w-full">
-                            <span className="text-sm font-medium text-gray-700 mb-1 block">Upload Your Logo</span>
-                            {isUploading ? (
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Upload Image for 3D Shape</span>
+                            {isUploadingShapeImage ? (
                               <div className="text-sm text-gray-500 p-2">
                                 Processing image...
                               </div>
@@ -582,7 +601,7 @@ export default function App() {
                                 <input
                                   type="file"
                                   accept="image/png, image/jpeg"
-                                  onChange={handleLogoUpload}
+                                  onChange={handleShapeImageUpload}
                                   className="block w-full text-sm text-gray-500
                                     file:mr-4 file:py-2 file:px-4
                                     file:rounded-full file:border-0
@@ -592,16 +611,20 @@ export default function App() {
                                 />
                               </div>
                             )}
-                            <img src={logo3DBase64} alt="Logo Preview" className="w-16 h-16 mt-2 rounded-lg object-cover border border-gray-200" />
+                            {shapeImageBase64 && (
+                              <img src={shapeImageBase64} alt="Shape Preview" className="w-16 h-16 mt-2 rounded-lg object-cover border border-gray-200" />
+                            )}
                           </label>
-                          <Select
-                            label="3D Shape"
-                            value={shape3D}
-                            onChange={(e) => setShape3D(e.target.value)}
-                          >
-                            {/* --- PERBAIKAN: List baru digunakan di sini --- */}
-                            {SHAPES_3D_LOGO.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                          </Select>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700 mb-1 block">Shape Color</span>
+                            <input
+                              type="color"
+                              value={shapeImageColor}
+                              onChange={(e) => setShapeImageColor(e.target.value)}
+                              className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                            />
+                          </label>
+                          <p className="text-xs text-gray-500">Gambar akan dikonversi menjadi bentuk 3D yang dapat diputar</p>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -803,9 +826,17 @@ export default function App() {
             <>
               <PreviewContainer
                 viewport={viewport}
-                enable3DBackground={enable3DBackground}
-                logo3DBase64={logo3DBase64}
-                shape3D={shape3D}
+                enable3DText={enable3DText}
+                text3D={text3D}
+                text3DColor={text3DColor}
+                text3DSize={text3DSize}
+                text3DSpeed={text3DSpeed}
+                text3DBackgroundColor={text3DBackgroundColor}
+                text3DRotationStyle={text3DRotationStyle}
+                enable3DShapeFromImage={enable3DShapeFromImage}
+                shapeImageBase64={shapeImageBase64}
+                shapeImageColor={shapeImageColor}
+                theme={theme}
               >
                 <PortfolioPreview {...portfolioState} />
               </PreviewContainer>
@@ -862,7 +893,7 @@ function EditorTabButton({ icon: Icon, text, active, ...props }) {
       className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${active ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600 hover:text-gray-800'
         }`}
     >
-      <Icon size={16} />
+      {Icon && <Icon size={16} />}
       <span>{text}</span>
     </button>
   );
@@ -1039,7 +1070,7 @@ function ViewportButton({ icon: Icon, active, ...props }) {
       className={`p-1.5 rounded-md ${active ? 'bg-white shadow-sm text-blue-600' : 'bg-transparent text-gray-600 hover:text-gray-800'
         }`}
     >
-      <Icon size={18} />
+      {Icon && <Icon size={18} />}
     </button>
   );
 }
@@ -1051,27 +1082,56 @@ const viewportClasses = {
 };
 
 // --- PERBAIKAN: PreviewContainer diubah total ---
-function PreviewContainer({ viewport, children, enable3DBackground, logo3DBase64, shape3D }) {
+function PreviewContainer({ viewport, children, enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle, enable3DShapeFromImage, shapeImageBase64, shapeImageColor, theme }) {
   return (
     <div className={`mx-auto ${viewportClasses[viewport]} transition-all duration-300`}>
-      {/* PERBAIKAN: 
-        - 'relative' ditambahkan agar bisa menampung canvas 3D
-        - 'bg-white' diganti menjadi dinamis
-      */}
-      <div className={`rounded-lg shadow-xl overflow-hidden relative ${enable3DBackground ? 'bg-transparent' : 'bg-white'}`}>
+      {/* Container dengan background dari theme */}
+      <div className={`rounded-lg shadow-xl overflow-hidden relative h-[600px] ${theme?.bg || 'bg-white'}`}>
 
-        {/* PERBAIKAN: Komponen 3D diletakkan DI DALAM container ini, DI BELAKANG konten */}
-        {enable3DBackground && (
-          <ThreeDBackground
-            logoBase64={logo3DBase64}
-            shape={shape3D}
-          />
+        {/* --- 3D Text Layer --- */}
+        {enable3DText && (
+          <div className="absolute inset-0 z-10 h-[600px] w-full pointer-events-none flex items-center justify-center bg-red-100/10">
+            <div style={{ position: 'absolute', top: 0, left: 0, fontSize: '10px', color: 'red' }}>3D Text Active</div>
+            <ThreeDTextComponent
+              text={text3D}
+              color={text3DColor}
+              size={text3DSize}
+              speed={text3DSpeed}
+              bgColor={text3DBackgroundColor}
+              rotationStyle={text3DRotationStyle}
+            />
+          </div>
         )}
 
-        {/* PERBAIKAN: 
-          - 'relative' dan 'z-10' ditambahkan agar konten ini berada DI ATAS canvas 3D
-        */}
-        <div className="h-[600px] overflow-y-auto relative z-10">
+        {/* --- 3D Shape from Image Layer --- */}
+        {enable3DShapeFromImage && shapeImageBase64 && (
+          <div className="absolute inset-0 z-10 h-[600px] w-full pointer-events-none">
+            <div style={{
+              width: '100%',
+              height: '100%',
+              background: `linear-gradient(135deg, ${shapeImageColor}20, ${shapeImageColor}40)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <img 
+                src={shapeImageBase64} 
+                alt="3D Shape" 
+                style={{
+                  width: '200px',
+                  height: '200px',
+                  opacity: 0.3,
+                  filter: `hue-rotate(0deg) brightness(2)`,
+                  mixBlendMode: 'screen'
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* --- Content Layer (Normal flow, on top) --- */}
+        {/* Keep the preview content transparent so theme backgrounds show through. */}
+        <div className="h-[600px] overflow-y-auto relative z-20 bg-transparent">
           {children}
         </div>
       </div>
@@ -1088,7 +1148,7 @@ const animVariants = {
 };
 
 
-function PortfolioPreview({ animation, layout, ...props }) {
+function PortfolioPreview({ animation, ...props }) {
   const fontStyle = { fontFamily: props.font, '--primary-color': props.primaryColor };
   const animProps = animVariants[animation] || animVariants['none'];
 
@@ -1098,10 +1158,13 @@ function PortfolioPreview({ animation, layout, ...props }) {
     transition: { ...animProps.transition, delay: delay * 0.1 }
   });
 
+  // Check if ANY wow factor feature is enabled - not just 3D Background
+  const hasAnyWowFactor = props.enable3DText || props.enable3DShapeFromImage;
+
   return (
     <div
-      // Latar belakang di sini harus transparan agar 3D terlihat
-      className={`w-full min-h-full ${props.theme.text} ${props.enable3DBackground ? 'bg-transparent' : props.theme.bg}`}
+      // Background menggunakan theme background - tidak pernah putih
+      className={`w-full min-h-full ${props.theme.text} ${props.theme.bg}`}
       style={fontStyle}
     >
       <style>{`
@@ -1138,8 +1201,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
           height: 1.25rem;
           border-radius: 9999px;
           background-color: var(--primary-color);
-          /* Perlu bgValue, tapi jika transparan, fallback ke warna solid */
-          border: 2px solid ${props.enable3DBackground ? (props.theme.id.includes('dark') ? '#0f0c29' : '#ffffff') : props.theme.bgValue};
+          border: 2px solid ${props.theme.bgValue};
         }
 
         /* --- Perbarui Kartu agar memiliki latar belakang solid saat 3D aktif --- */
@@ -1196,7 +1258,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
                   <motion.div key={item.id} {...motionProps(i + 2)} className="timeline-item">
                     <div className="timeline-dot"></div>
                     {/* --- Perbarui Kartu Latar Belakang --- */}
-                    <div className={`p-0 rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} overflow-hidden`}>
+                    <div className={`p-0 rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} overflow-hidden`}>
                       {item.imageUrl && (
                         <img
                           src={item.imageUrl}
@@ -1222,7 +1284,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
             ) : (
               <div className="flex flex-col gap-6">
                 {props.experience.map((item, i) => (
-                  <motion.div key={item.id} {...motionProps(i + 2)} className={`rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} overflow-hidden`}>
+                  <motion.div key={item.id} {...motionProps(i + 2)} className={`rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} overflow-hidden`}>
                     {item.imageUrl && (
                       <img
                         src={item.imageUrl}
@@ -1261,7 +1323,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   {...motionProps(i + 4)}
-                  className={`rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} flex flex-col gap-0 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all`}
+                  className={`rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} flex flex-col gap-0 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all`}
                 >
                   {item.imageUrl && (
                     <img
@@ -1292,7 +1354,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
                 <motion.div
                   key={item.id}
                   {...motionProps(i + 6)}
-                  className={`p-6 rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card}`}
+                  className={`p-6 rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card}`}
                 >
                   <h3 className="text-xl font-semibold mb-3">{item.category}</h3>
                   <div className="flex flex-wrap gap-2">
@@ -1319,7 +1381,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   {...motionProps(i + 8)}
-                  className={`rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} flex flex-col gap-0 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all`}
+                  className={`rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} flex flex-col gap-0 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all`}
                 >
                   {item.imageUrl && (
                     <img
@@ -1353,7 +1415,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   {...motionProps(i + 10)}
-                  className={`p-6 rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} hover:shadow-xl transition-shadow`}
+                  className={`p-6 rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} hover:shadow-xl transition-shadow`}
                 >
                   <h3 className="text-lg font-semibold primary-text">{item.title}</h3>
                   <p className="text-sm italic opacity-75">{item.journal}</p>
@@ -1371,7 +1433,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
                 <motion.div
                   key={item.id}
                   {...motionProps(i + 12)}
-                  className={`p-4 rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} text-center`}
+                  className={`p-4 rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} text-center`}
                 >
                   <p className="text-sm font-medium">{item.title}</p>
                 </motion.div>
@@ -1385,7 +1447,7 @@ function PortfolioPreview({ animation, layout, ...props }) {
           <PortfolioSection title={props.contactConfig.introText || 'Get In Touch'}>
             <motion.form
               {...motionProps(14)}
-              className={`p-6 md:p-8 rounded-lg ${props.enable3DBackground ? 'card-bg' : props.theme.card} flex flex-col gap-4`}
+              className={`p-6 md:p-8 rounded-lg ${hasAnyWowFactor ? 'card-bg' : props.theme.card} flex flex-col gap-4`}
               onSubmit={(e) => e.preventDefault()} // Mencegah submit di preview
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1420,264 +1482,12 @@ function PortfolioSection({ title, children }) {
 function SocialIcon({ icon: Icon, href }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity hover:scale-110">
-      <Icon size={28} />
+      {Icon && <Icon size={28} />}
     </a>
   );
 }
 
-// --- KOMPONEN BARU: ThreeDBackground ---
-function ThreeDBackground({ logoBase64, shape }) {
-  const canvasRef = useRef(null);
-  const sceneRef = useRef(null); // { scene, camera, renderer, mesh, parentEl, mouse }
-  const animationFrameId = useRef(null);
-  const [status, setStatus] = useState("Loading 3D assets...");
-
-  useEffect(() => {
-    // Cek dependensi
-    if (!window['script-three-core']) {
-      setStatus("Waiting for THREE.js...");
-      const timer = setTimeout(() => setStatus("Still loading..."), 1000);
-      return () => clearTimeout(timer);
-    }
-
-    const { THREE } = window;
-    const currentCanvas = canvasRef.current;
-    if (!currentCanvas) return;
-
-    // --- PERBAIKAN: Dapatkan parent dari canvas, BUKAN parent dari canvas
-    const parentEl = currentCanvas.parentElement;
-    if (!parentEl) return;
-
-    setStatus("Initializing scene...");
-
-    // 1. Setup Adegan
-    const scene = new THREE.Scene();
-    // --- PERBAIKAN: Gunakan ukuran parentEl ---
-    const camera = new THREE.PerspectiveCamera(75, parentEl.clientWidth / parentEl.clientHeight, 0.1, 1000);
-    camera.position.z = 3;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas: currentCanvas,
-      antialias: true,
-      alpha: true, // Latar belakang transparan
-    });
-    renderer.setSize(parentEl.clientWidth, parentEl.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    // 2. Setup Pencahayaan
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
-
-    // 3. Setup Resize
-    const handleResize = () => {
-      if (!parentEl || !renderer || !camera) return;
-      const width = parentEl.clientWidth;
-      const height = parentEl.clientHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    };
-    const resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(parentEl);
-
-    // 4. Setup Interaksi Mouse
-    const mouse = new THREE.Vector2(0.5, 0.5); // Mulai di tengah
-    const handleMouseMove = (event) => {
-      if (document.body.contains(currentCanvas)) {
-        const rect = parentEl.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-      }
-    };
-    parentEl.addEventListener('mousemove', handleMouseMove);
-    parentEl.addEventListener('mouseout', () => {
-      mouse.x = 0.5;
-      mouse.y = 0.5;
-    });
-
-    // 5. Setup Scene Ref
-    sceneRef.current = { scene, camera, renderer, mesh: null, parentEl, mouse };
-
-    // 6. Loop Animasi
-    const clock = new THREE.Clock();
-    const animate = () => {
-      if (animationFrameId.current === null) return;
-
-      const elapsedTime = clock.getElapsedTime();
-
-      if (sceneRef.current?.mesh) {
-        // Rotasi otomatis
-        sceneRef.current.mesh.rotation.y = 0.3 * elapsedTime;
-
-        // Rotasi mouse lebih halus
-        const targetRotationX = mouse.y * 0.5;
-        const targetRotationZ = mouse.x * 0.5;
-        sceneRef.current.mesh.rotation.x += (targetRotationX - sceneRef.current.mesh.rotation.x) * 0.1;
-        sceneRef.current.mesh.rotation.z += (targetRotationZ - sceneRef.current.mesh.rotation.z) * 0.1;
-      }
-
-      if (sceneRef.current) {
-        renderer.render(scene, camera);
-      }
-      animationFrameId.current = requestAnimationFrame(animate);
-    };
-    animationFrameId.current = requestAnimationFrame(animate);
-
-    // 7. Cleanup
-    return () => {
-      cancelAnimationFrame(animationFrameId.current);
-      animationFrameId.current = null;
-      parentEl.removeEventListener('mousemove', handleMouseMove);
-      parentEl.removeEventListener('mouseout', () => {
-        mouse.x = 0.5;
-        mouse.y = 0.5;
-      });
-
-      if (sceneRef.current) {
-        if (sceneRef.current.parentEl) {
-          resizeObserver.unobserve(sceneRef.current.parentEl);
-        }
-        if (sceneRef.current.mesh) {
-          sceneRef.current.mesh.geometry?.dispose();
-          if (sceneRef.current.mesh.material) {
-            if (sceneRef.current.mesh.material.map) {
-              sceneRef.current.mesh.material.map.dispose();
-            }
-            sceneRef.current.mesh.material.dispose();
-          }
-        }
-        sceneRef.current.scene?.clear();
-        sceneRef.current.renderer?.dispose();
-      }
-      sceneRef.current = null;
-    };
-  }, []); // Hanya berjalan sekali saat mount
-
-  // --- Efek untuk MEMUAT/MEMPERBARUI Mesh ---
-  useEffect(() => {
-    if (!sceneRef.current || !window.THREE) {
-      return;
-    }
-    if (!logoBase64) {
-      if (sceneRef.current?.mesh) {
-        sceneRef.current.scene.remove(sceneRef.current.mesh);
-        sceneRef.current.mesh.geometry?.dispose();
-        if (sceneRef.current.mesh.material) {
-          if (sceneRef.current.mesh.material.map) {
-            sceneRef.current.mesh.material.map.dispose();
-          }
-          sceneRef.current.mesh.material.dispose();
-        }
-        sceneRef.current.mesh = null;
-      }
-      return;
-    }
-
-    setStatus("Loading 3D texture...");
-    const { THREE } = window;
-    const { scene } = sceneRef.current;
-
-    new THREE.TextureLoader().load(
-      logoBase64, // src
-      (texture) => { // onLoad callback
-        try {
-          setStatus("Creating 3D shape...");
-
-          if (sceneRef.current.mesh) {
-            scene.remove(sceneRef.current.mesh);
-            sceneRef.current.mesh.geometry?.dispose();
-            if (sceneRef.current.mesh.material) {
-              if (sceneRef.current.mesh.material.map) {
-                sceneRef.current.mesh.material.map.dispose();
-              }
-              sceneRef.current.mesh.material.dispose();
-            }
-          }
-
-          // Buat geometri
-          let geometry;
-          const size = 1.5; // Ukuran dasar
-          switch (shape) {
-            case 'plane':
-              geometry = new THREE.PlaneGeometry(size, size);
-              break;
-            case 'box':
-              geometry = new THREE.BoxGeometry(size, size, size);
-              break;
-            case 'torus':
-              geometry = new THREE.TorusGeometry(size / 2, size / 5, 16, 100);
-              break;
-            case 'cone':
-              geometry = new THREE.ConeGeometry(size / 2, size, 32);
-              break;
-            case 'cylinder':
-              geometry = new THREE.CylinderGeometry(size / 2, size / 2, size, 32);
-              break;
-            case 'octahedron':
-              geometry = new THREE.OctahedronGeometry(size / 1.5);
-              break;
-            case 'dodecahedron':
-              geometry = new THREE.DodecahedronGeometry(size / 1.5);
-              break;
-            case 'icosahedron':
-              geometry = new THREE.IcosahedronGeometry(size / 1.5);
-              break;
-            case 'ring':
-              geometry = new THREE.RingGeometry(size / 4, size / 2, 32);
-              break;
-            case 'sphere':
-            default:
-              geometry = new THREE.SphereGeometry(size / 1.5, 32, 32);
-              break;
-          }
-
-          // Buat material
-          const material = new THREE.MeshStandardMaterial({
-            map: texture,
-            color: 0xffffff, // Biarkan warna asli
-            metalness: 0.2,
-            roughness: 0.8,
-          });
-
-          if (shape === 'plane' || shape === 'ring') {
-            material.transparent = true;
-            material.alphaTest = 0.5; // Menghilangkan background transparan PNG
-            material.side = THREE.DoubleSide; // Terlihat dari depan dan belakang
-          }
-
-          const newMesh = new THREE.Mesh(geometry, material);
-          scene.add(newMesh);
-          sceneRef.current.mesh = newMesh; // Simpan
-          setStatus(""); // Selesai
-
-        } catch (e) {
-          console.error("Error creating 3D mesh:", e);
-          setStatus("Error in 3D creation.");
-        }
-      },
-      undefined, // onProgress callback
-      (err) => { // onError callback
-        console.error('Gagal memuat tekstur 3D dari Base64. Data gambar mungkin rusak atau tidak valid.', err);
-        setStatus("Error: Gagal memuat gambar. Coba unggah file PNG/JPG yang valid.");
-      }
-    ); // --- Akhir dari TextureLoader ---
-
-  }, [logoBase64, shape]); // Berjalan ulang jika data Base64 atau Bentuk berubah
-
-  return (
-    // --- PERBAIKAN: Canvas HARUS menjadi elemen anak dari div ini ---
-    <div className="absolute inset-0 z-0 w-full h-full overflow-hidden">
-      <canvas ref={canvasRef} className="w-full h-full" />
-      {status && (
-        <div className="absolute bottom-4 left-4 text-xs text-gray-500 opacity-50">
-          {status}
-        </div>
-      )}
-    </div>
-  );
-}
+// ThreeDBackground component removed — feature deprecated and code cleaned up.
 
 
 // --- KOMPONEN BARU: AIChatbotWindow ---
@@ -1946,163 +1756,6 @@ function GeneratedCode(props) {
 
 // --- FUNGSI GENERATOR KODE (PERUBAHAN BESAR) ---
 
-// --- FUNGSI BARU UNTUK MEMBUAT SKRIP 3D LATAR BELAKANG ---
-function generateThreeDBackgroundScript(props) {
-  if (!props.enable3DBackground || !props.logo3DBase64) return '';
-
-  return `
-<!-- Skrip Three.js Diinjeksi -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-  window.addEventListener('load', () => {
-    if (typeof THREE === 'undefined') {
-      console.error('Skrip Three.js gagal dimuat.');
-      return;
-    }
-
-    // Ambil data yang "dipanggang"
-    const mountEl = document.getElementById('three-background-canvas');
-    const logoDataBase64 = "${props.logo3DBase64}";
-    const shape = "${props.shape3D}";
-
-    if (!mountEl) return;
-    
-    const parentEl = mountEl.parentElement;
-    if (!parentEl) return;
-
-    // 1. Setup Adegan
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, parentEl.clientWidth / parentEl.clientHeight, 0.1, 1000);
-    camera.position.z = 3;
-
-    const renderer = new THREE.WebGLRenderer({ 
-      canvas: mountEl,
-      antialias: true, 
-      alpha: true // Transparan
-    });
-    renderer.setSize(parentEl.clientWidth, parentEl.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    // 2. Setup Pencahayaan
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
-
-    // 3. Setup Resize
-    const resizeObserver = new ResizeObserver(() => {
-      if (!parentEl || !renderer || !camera) return;
-      const width = parentEl.clientWidth;
-      const height = parentEl.clientHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    });
-    resizeObserver.observe(parentEl);
-
-    // 4. Setup Interaksi Mouse
-    const mouse = new THREE.Vector2(0.5, 0.5);
-    parentEl.addEventListener('mousemove', (event) => {
-      const rect = parentEl.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    });
-    parentEl.addEventListener('mouseout', () => {
-        mouse.x = 0.5;
-        mouse.y = 0.5;
-    });
-
-    // 5. Variabel Mesh
-    let currentMesh = null;
-
-    // 6. Muat Tekstur dan Buat Mesh
-    new THREE.TextureLoader().load(
-      logoDataBase64, // src
-      (texture) => { // onLoad
-        try {
-          let geometry;
-          const size = 1.5;
-          switch (shape) {
-            case 'plane':
-              geometry = new THREE.PlaneGeometry(size, size);
-              break;
-            case 'box':
-              geometry = new THREE.BoxGeometry(size, size, size);
-              break;
-            case 'torus':
-              geometry = new THREE.TorusGeometry(size / 2, size / 5, 16, 100);
-              break;
-            case 'cone':
-              geometry = new THREE.ConeGeometry(size / 2, size, 32);
-              break;
-            case 'cylinder':
-              geometry = new THREE.CylinderGeometry(size / 2, size / 2, size, 32);
-              break;
-            case 'octahedron':
-              geometry = new THREE.OctahedronGeometry(size / 1.5);
-              break;
-            case 'dodecahedron':
-              geometry = new THREE.DodecahedronGeometry(size / 1.5);
-              break;
-            case 'icosahedron':
-              geometry = new THREE.IcosahedronGeometry(size / 1.5);
-              break;
-            case 'ring':
-              geometry = new THREE.RingGeometry(size / 4, size / 2, 32);
-              break;
-            case 'sphere':
-            default:
-              geometry = new THREE.SphereGeometry(size / 1.5, 32, 32);
-              break;
-          }
-
-          const material = new THREE.MeshStandardMaterial({
-            map: texture,
-            color: 0xffffff,
-            metalness: 0.2,
-            roughness: 0.8,
-          });
-
-          if (shape === 'plane' || shape === 'ring') {
-            material.transparent = true;
-            material.alphaTest = 0.5;
-            material.side = THREE.DoubleSide;
-          }
-          
-          currentMesh = new THREE.Mesh(geometry, material);
-          scene.add(currentMesh);
-        } catch (e) {
-           console.error('Gagal membuat mesh 3D di HTML:', e);
-        }
-      },
-      undefined, // onProgress
-      (err) => { // onError
-        console.error('Gagal memuat tekstur 3D dari Base64 di HTML. Data gambar mungkin rusak atau tidak valid.', err);
-      }
-    );
-
-    // 7. Loop Animasi
-    const clock = new THREE.Clock();
-    const animate = () => {
-      requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
-      
-      if (currentMesh) {
-        currentMesh.rotation.y = 0.3 * elapsedTime;
-        const targetRotationX = mouse.y * 0.5;
-        const targetRotationZ = mouse.x * 0.5;
-        currentMesh.rotation.x += (targetRotationX - currentMesh.rotation.x) * 0.1;
-        currentMesh.rotation.z += (targetRotationZ - currentMesh.rotation.z) * 0.1;
-      }
-      
-      renderer.render(scene, camera);
-    };
-    animate();
-  });
-</script>
-`;
-}
-
 // --- FUNGSI BARU UNTUK MEMBUAT SKRIP CHATBOT ---
 function generateChatbotScript(props) {
   if (!props.chatConfig.enable) return '';
@@ -2271,8 +1924,7 @@ function generateStaticHTML(props) {
     skills, certifications, publications, achievements,
     contactConfig,
     chatConfig, // <-- Ambil Chat Config
-    theme, primaryColor, font, experienceLayout,
-    enable3DBackground
+    theme, primaryColor, font, experienceLayout
   } = props;
 
   const fontLink = font === 'Inter'
@@ -2305,18 +1957,10 @@ function generateStaticHTML(props) {
     </section>
   `;
 
-  const mainContentBg = enable3DBackground ? 'bg-transparent' : theme.bg;
+  const mainContentBg = theme.bg;
 
-  // --- PERBAIKAN: Logika Card Class disederhanakan ---
-  const cardClass = enable3DBackground
-    ? `shadow-lg ${theme.id === 'dark' ? 'bg-[rgba(15,12,41,0.8)]' : // Fallback solid untuk dark
-      theme.id === 'minimalist' ? 'bg-[rgba(255,255,255,0.8)]' : // Fallback solid untuk light
-        theme.bgValue ? `${theme.bgValue.replace(']', 'CC]')} ` : // Gunakan bgValue + transparansi 80%
-          'bg-[rgba(255,255,255,0.8)]' // Default fallback
-    } ${theme.id.includes('glass') ? 'backdrop-blur-sm' : 'backdrop-blur-sm' // Terapkan blur
-    } ${theme.card.includes('border') ? (theme.id.includes('dark') ? 'border border-gray-700/50' : 'border border-gray-200/50') : ''
-    }`
-    : theme.card;
+  // --- Card Class menggunakan theme card ---
+  const cardClass = theme.card;
 
 
   const experienceHTML = experience.length > 0 ? `
@@ -2547,7 +2191,7 @@ function generateStaticHTML(props) {
     </button>
     
     <!-- Jendela Chat (Hidden by default) -->
-    <div id="chat-window" class="hidden fixed bottom-8 right-8 z-50 w-[350px] h-[450px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden border border-gray-200" style="font-family: 'Inter', sans-serif;">
+    <div id="chat-window" class="fixed bottom-8 right-8 z-50 w-[350px] h-[450px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden border border-gray-200" style="font-family: 'Inter', sans-serif; display: none;">
       <!-- Header -->
       <div class="flex justify-between items-center p-3 text-white" style="background-color: ${primaryColor};">
         <div class="flex items-center gap-2">
@@ -2568,7 +2212,7 @@ function generateStaticHTML(props) {
           </div>
         </div>
         <!-- Loading indicator (hidden by default) -->
-        <div id="chat-loading" class="hidden flex justify-start">
+        <div id="chat-loading" class="flex justify-start" style="display: none;">
           <div class="p-3 rounded-lg bg-gray-100 rounded-bl-none">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin text-gray-500">
               <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
@@ -2631,18 +2275,14 @@ function generateStaticHTML(props) {
         height: 1.25rem;
         border-radius: 9999px;
         background-color: var(--primary-color);
-        border: 2px solid ${enable3DBackground ? (theme.id.includes('dark') ? '#0f0c29' : '#ffffff') : (theme.bgValue || (theme.id === 'dark' ? '#0f0c29' : '#ffffff'))};
+        border: 2px solid ${theme.bgValue || (theme.id === 'dark' ? '#0f0c29' : '#ffffff')};
       }
     ` : '';
 
 
-  const threeJSScript = generateThreeDBackgroundScript(props);
+  const threeJSScript = '';
 
-  const threeDCanvasHTML = enable3DBackground
-    ? `<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
-         <canvas id="three-background-canvas"></canvas>
-       </div>`
-    : '';
+  const threeDCanvasHTML = '';
 
   // --- Main Template String ---
   return `<!DOCTYPE html>
@@ -2661,7 +2301,7 @@ function generateStaticHTML(props) {
         html { scroll-behavior: smooth; }
         body { 
           font-family: var(--font-main); 
-          ${!enable3DBackground ? `background-color: ${theme.bgValue || '#ffffff'};` : ''}
+          background-color: ${theme.bgValue || '#ffffff'};
         }
         .primary-text { color: var(--primary-color); }
         .primary-bg { background-color: var(--primary-color); color: white; }
@@ -2670,7 +2310,7 @@ function generateStaticHTML(props) {
         ${timelineStyle}
     </style>
 </head>
-<body class="w-full min-h-full ${enable3DBackground ? 'bg-transparent' : theme.bg} ${theme.text}">
+<body class="w-full min-h-full ${theme.bg} ${theme.text}">
     
     <!-- Sisipkan Latar 3D Canvas di sini -->
     ${threeDCanvasHTML}
