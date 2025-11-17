@@ -17,8 +17,6 @@ import {
   Loader2 // <-- Ikon Baru
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThreeDTextComponent } from './components/ThreeDTextComponent';
-import { ThreeDShapeComponent } from './components/ThreeDShapeComponent';
 
 // --- CUSTOM HOOK UNTUK SCRIPT (THREE.JS) ---
 const useScript = (url, id) => {
@@ -196,35 +194,86 @@ export default function App() {
   const [layout, setLayout] = useState('one-page');
   const [animation, setAnimation] = useState('fade-in');
   const [experienceLayout, setExperienceLayout] = useState('list');
-  const [enable3DText, setEnable3DText] = useState(true);
-  const [text3D, setText3D] = useState('PortoForge');
-  const [text3DColor, setText3DColor] = useState('#3b82f6');
-  const [text3DSize, setText3DSize] = useState('large');
-  const [text3DSpeed, setText3DSpeed] = useState('normal');
-  const [text3DBackgroundColor, setText3DBackgroundColor] = useState('#ffffff');
-  const [text3DRotationStyle, setText3DRotationStyle] = useState('xy-orbit');
-  const [enable3DShapeFromImage, setEnable3DShapeFromImage] = useState(true);
-  const [shapeImageBase64, setShapeImageBase64] = useState('');
-  const [shapeImageColor, setShapeImageColor] = useState('#3b82f6');
-  const [shapeDepth, setShapeDepth] = useState('medium');
-  const [shapeRotationX, setShapeRotationX] = useState(0.005);
-  const [shapeRotationY, setShapeRotationY] = useState(0.008);
-  const [shapeRotationZ, setShapeRotationZ] = useState(0);
-  const [shapeBackgroundColor, setShapeBackgroundColor] = useState('#ffffff');
-  const [isUploadingShapeImage, setIsUploadingShapeImage] = useState(false);
-  const [editorTab, setEditorTab] = useState('content');
+
+  // --- STATE 3D BARU ---
+  const [enable3DBackground, setEnable3DBackground] = useState(false);
+  const [logo3DBase64, setLogo3DBase64] = useState(DEFAULT_LOGO_BASE64);
+  const [shape3D, setShape3D] = useState('sphere');
+  const [isUploading, setIsUploading] = useState(false);
+
+
+  // UI State
+  const [editorTab, setEditorTab] = useState('content'); // 'content', 'design', 'templates', 'connect', 'chat'
   const [activeTabRight, setActiveTabRight] = useState('preview');
   const [viewport, setViewport] = useState('desktop');
   const [showChat, setShowChat] = useState(false);
 
-  // Helper to build portfolioState
-  const portfolioState = useMemo(() => ({
-    name, title, description, profilePic, socials, projects, experience, skills,
-    certifications, publications, achievements, contactConfig, chatConfig,
-    theme, primaryColor, font, layout, animation, experienceLayout,
-    enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle,
-    enable3DShapeFromImage, shapeImageBase64, shapeImageColor, shapeDepth, shapeRotationX, shapeRotationY, shapeRotationZ, shapeBackgroundColor
-  }), [name, title, description, profilePic, socials, projects, experience, skills, certifications, publications, achievements, contactConfig, chatConfig, theme, primaryColor, font, layout, animation, experienceLayout, enable3DText, text3D, text3DColor, text3DSize, text3DSpeed, text3DBackgroundColor, text3DRotationStyle, enable3DShapeFromImage, shapeImageBase64, shapeImageColor, shapeDepth, shapeRotationX, shapeRotationY, shapeRotationZ, shapeBackgroundColor]);
+
+  useEffect(() => { loadGoogleFont(font); }, [font]);
+
+  // --- HANDLER: STATE MANIPULATION ---
+  const handleSocialChange = (key, value) => setSocials(prev => ({ ...prev, [key]: value }));
+  const handleItemChange = (setState, id, key, value) => {
+    setState(prev => prev.map(item => item.id === id ? { ...item, [key]: value } : item));
+  };
+  const addItem = (setState, newItem) => setState(prev => [...prev, { id: Date.now(), ...newItem }]);
+  const removeItem = (setState, id) => setState(prev => prev.filter(item => item.id !== id));
+
+  const handleContactChange = (key, value) => {
+    setContactConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  // --- HANDLER CHATBOT BARU ---
+  const handleChatConfigChange = (key, value) => {
+    setChatConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onloadstart = () => setIsUploading(true);
+      reader.onloadend = () => {
+        setLogo3DBase64(reader.result);
+        setIsUploading(false);
+      };
+      reader.onerror = () => {
+        console.error("Gagal membaca file");
+        alert("Gagal membaca file. Pastikan file tidak rusak.");
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = null;
+  };
+
+
+  // --- HANDLER: SAVE, LOAD, TEMPLATE ---
+  const applyTemplate = (templateData) => {
+    setName(templateData.name);
+    setTitle(templateData.title);
+    setDescription(templateData.description);
+    setProfilePic(templateData.profilePic);
+    setSocials(templateData.socials);
+    setProjects(templateData.projects.map(p => ({ ...p })));
+    setExperience(templateData.experience.map(e => ({ ...e })));
+    setSkills(templateData.skills ? templateData.skills.map(s => ({ ...s })) : []);
+    setCertifications(templateData.certifications ? templateData.certifications.map(c => ({ ...c })) : []);
+    setPublications(templateData.publications ? templateData.publications.map(p => ({ ...p })) : []);
+    setAchievements(templateData.achievements ? templateData.achievements.map(a => ({ ...a })) : []);
+    setContactConfig(templateData.contactConfig || { method: 'none', value: '', introText: 'Get In Touch' });
+    setChatConfig(templateData.chatConfig || { enable: false, aiName: 'PortoBot', introMessage: 'Halo!', placeholder: 'Tanya saya...' });
+    setTheme(templateData.theme);
+    setPrimaryColor(templateData.primaryColor);
+    setFont(templateData.font);
+    setLayout(templateData.layout);
+    setAnimation(templateData.animation);
+    setEnable3DBackground(templateData.enable3DBackground || false);
+    setLogo3DBase64(templateData.logo3DBase64 || DEFAULT_LOGO_BASE64);
+    setShape3D(templateData.shape3D || 'sphere');
+    setExperienceLayout(templateData.experienceLayout || 'list');
+  };
 
   const handleSave = () => {
     try {
@@ -260,21 +309,6 @@ export default function App() {
         setLayout(parsedData.layout || 'one-page');
         setAnimation(parsedData.animation || 'fade-in');
         setExperienceLayout(parsedData.experienceLayout || 'list');
-        setEnable3DText(parsedData.enable3DText || false);
-        setText3D(parsedData.text3D || 'PortoForge');
-        setText3DColor(parsedData.text3DColor || '#3b82f6');
-        setText3DSize(parsedData.text3DSize || 'large');
-        setText3DSpeed(parsedData.text3DSpeed || 'normal');
-        setText3DBackgroundColor(parsedData.text3DBackgroundColor || '#ffffff');
-        setText3DRotationStyle(parsedData.text3DRotationStyle || 'xy-orbit');
-        setEnable3DShapeFromImage(parsedData.enable3DShapeFromImage || false);
-        setShapeImageBase64(parsedData.shapeImageBase64 || '');
-        setShapeImageColor(parsedData.shapeImageColor || '#3b82f6');
-        setShapeDepth(parsedData.shapeDepth || 'medium');
-        setShapeRotationX(parsedData.shapeRotationX || 0.005);
-        setShapeRotationY(parsedData.shapeRotationY || 0.008);
-        setShapeRotationZ(parsedData.shapeRotationZ || 0);
-        setShapeBackgroundColor(parsedData.shapeBackgroundColor || '#ffffff');
         alert('Project Loaded! 🎉');
       } else { alert('No saved project found.'); }
     } catch (e) {
@@ -289,7 +323,7 @@ export default function App() {
   const addItem = (setter, item) => setter(prev => [...prev, { ...item, id: Date.now() }]);
   const removeItem = (setter, id) => setter(prev => prev.filter(x => x.id !== id));
   const handleItemChange = (setter, id, key, value) => setter(prev => prev.map(x => x.id === id ? { ...x, [key]: value } : x));
-  
+
   const handleShapeImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -622,74 +656,16 @@ export default function App() {
                                 />
                               </div>
                             )}
-                            {shapeImageBase64 && (
-                              <img src={shapeImageBase64} alt="Shape Preview" className="w-16 h-16 mt-2 rounded-lg object-cover border border-gray-200" />
-                            )}
-                          </label>
-                          <label className="block">
-                            <span className="text-sm font-medium text-gray-700 mb-1 block">Shape Color</span>
-                            <input
-                              type="color"
-                              value={shapeImageColor}
-                              onChange={(e) => setShapeImageColor(e.target.value)}
-                              className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-                            />
+                            <img src={logo3DBase64} alt="Logo Preview" className="w-16 h-16 mt-2 rounded-lg object-cover border border-gray-200" />
                           </label>
                           <Select
-                            label="Depth / Volume"
-                            value={shapeDepth}
-                            onChange={(e) => setShapeDepth(e.target.value)}
+                            label="3D Shape"
+                            value={shape3D}
+                            onChange={(e) => setShape3D(e.target.value)}
                           >
-                            <option value="shallow">Shallow</option>
-                            <option value="medium">Medium</option>
-                            <option value="deep">Deep</option>
+                            {/* --- PERBAIKAN: List baru digunakan di sini --- */}
+                            {SHAPES_3D_LOGO.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                           </Select>
-                          <label className="block">
-                            <span className="text-sm font-medium text-gray-700 mb-1 block">Rotation X ({(shapeRotationX * 1000).toFixed(1)})</span>
-                            <input
-                              type="range"
-                              min="0"
-                              max="0.05"
-                              step="0.001"
-                              value={shapeRotationX}
-                              onChange={(e) => setShapeRotationX(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </label>
-                          <label className="block">
-                            <span className="text-sm font-medium text-gray-700 mb-1 block">Rotation Y ({(shapeRotationY * 1000).toFixed(1)})</span>
-                            <input
-                              type="range"
-                              min="0"
-                              max="0.05"
-                              step="0.001"
-                              value={shapeRotationY}
-                              onChange={(e) => setShapeRotationY(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </label>
-                          <label className="block">
-                            <span className="text-sm font-medium text-gray-700 mb-1 block">Rotation Z ({(shapeRotationZ * 1000).toFixed(1)})</span>
-                            <input
-                              type="range"
-                              min="0"
-                              max="0.05"
-                              step="0.001"
-                              value={shapeRotationZ}
-                              onChange={(e) => setShapeRotationZ(parseFloat(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </label>
-                          <label className="block">
-                            <span className="text-sm font-medium text-gray-700 mb-1 block">Background Color</span>
-                            <input
-                              type="color"
-                              value={shapeBackgroundColor}
-                              onChange={(e) => setShapeBackgroundColor(e.target.value)}
-                              className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-                            />
-                          </label>
-                          <p className="text-xs text-gray-500">Upload image dan customize rotasi 3D dengan volume yang Anda inginkan</p>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1179,9 +1155,9 @@ function PreviewContainer({ viewport, children, enable3DText, text3D, text3DColo
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <img 
-                src={shapeImageBase64} 
-                alt="3D Shape" 
+              <img
+                src={shapeImageBase64}
+                alt="3D Shape"
                 style={{
                   width: '200px',
                   height: '200px',
@@ -1771,8 +1747,8 @@ ${createPromptContext(query)}
           <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
               className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.sender === 'user'
-                  ? 'bg-blue-100 text-gray-800 rounded-br-none'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                ? 'bg-blue-100 text-gray-800 rounded-br-none'
+                : 'bg-gray-100 text-gray-800 rounded-bl-none'
                 }`}
             >
               {msg.text}
