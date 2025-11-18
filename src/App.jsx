@@ -335,29 +335,6 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const applyTemplate = (templateData) => {
-    setName(templateData.name || 'Your Name');
-    setTitle(templateData.title || '');
-    setDescription(templateData.description || '');
-    setProfilePic(templateData.profilePic || '');
-    setSocials(templateData.socials || { github: '', linkedin: '', twitter: '' });
-    setProjects(templateData.projects || []);
-    setExperience(templateData.experience || []);
-    setSkills(templateData.skills || []);
-    setCertifications(templateData.certifications || []);
-    setPublications(templateData.publications || []);
-    setAchievements(templateData.achievements || []);
-    setContactConfig(templateData.contactConfig || { method: 'none', value: '', introText: 'Get In Touch' });
-    setChatConfig(templateData.chatConfig || { enable: false, aiName: 'PortoBot', introMessage: 'Halo!', placeholder: 'Tanya saya...' });
-    setTheme(templateData.theme || THEMES[0]);
-    setPrimaryColor(templateData.primaryColor || '#3b82f6');
-    setFont(templateData.font || 'Inter');
-    setLayout(templateData.layout || 'one-page');
-    setAnimation(templateData.animation || 'fade-in');
-    setExperienceLayout(templateData.experienceLayout || 'list');
-    alert('Template applied! ✨');
-  };
-
   return (
     <div className="flex h-screen w-full bg-gray-100 font-sans relative">
 
