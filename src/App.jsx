@@ -317,12 +317,7 @@ export default function App() {
     }
   };
 
-  const handleSocialChange = (key, value) => setSocials(prev => ({ ...prev, [key]: value }));
-  const handleContactChange = (key, value) => setContactConfig(prev => ({ ...prev, [key]: value }));
-  const handleChatConfigChange = (key, value) => setChatConfig(prev => ({ ...prev, [key]: value }));
-  const addItem = (setter, item) => setter(prev => [...prev, { ...item, id: Date.now() }]);
-  const removeItem = (setter, id) => setter(prev => prev.filter(x => x.id !== id));
-  const handleItemChange = (setter, id, key, value) => setter(prev => prev.map(x => x.id === id ? { ...x, [key]: value } : x));
+
 
   const handleShapeImageUpload = (e) => {
     const file = e.target.files?.[0];
